@@ -1,6 +1,5 @@
 const config = require('./config');
+const botLoopController = require('./controller/botLoopController')
 
-
-console.log(config.api.baseEndpoint)
-console.log(config.api.apiKey)
-console.log(config.api.secretKey)
+const strategy = config.strategy;
+botLoopController.startBotLoop(strategy);

@@ -12,9 +12,20 @@ const config = {
         secretKey: process.env.SECRET_KEY,
     },
     
-    endpoints: {
-        
+    endpoint: {
+        systemStatus: '/sapi/v1/system/status',
+        exchangeInfo: '/api/v3/exchangeInfo',
+        candlestickData: '/api/v3/klines'
+    },
+
+    strategy: {
+        name: 'mma',
+        pair: 'BNBUSDT', // BNBBTC ETHBTC BNBUSDT BTCUSDT ETHUSDT
+        periods: 9,
+        timeInterval: '5m',
+        active: true // vai ser usado futuramente para indicar quais estrategias estao habilitadas/desabilitadas
     }
+
 }
 
 module.exports = config;
