@@ -1,12 +1,15 @@
 {
-  "name": "binance_api_bot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Fabio Arruda",
-  "license": "ISC"
+    "name": "binance_api_bot",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Fabio Arruda",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^16.0.0"
+    }
 }
