@@ -1,6 +1,6 @@
 const keys = {
     apiKey: '',
-    secretKey: ''
+    secretKey: ' '
 }
 
 module.exports = keys;
