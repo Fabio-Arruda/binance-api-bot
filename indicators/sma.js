@@ -2,7 +2,7 @@ const getSMA = (periods, candles) => {
 
     let closePriceSum = 0;
     candles.forEach((candle) => {
-        closePriceSum += parseFloat(candle.closePrice);
+        closePriceSum += candle.closePrice;
     })
     return closePriceSum / periods;
 }

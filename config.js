@@ -19,7 +19,7 @@ const config = {
     },
 
     strategy: {
-        name: 'mma',
+        name: 'sma',
         pair: 'BNBUSDT', // BNBBTC ETHBTC BNBUSDT BTCUSDT ETHUSDT
         periods: 9,
         timeInterval: '5m',
