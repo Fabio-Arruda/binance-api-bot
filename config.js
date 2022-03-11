@@ -23,6 +23,8 @@ const config = {
         pair: 'BNBUSDT', // BNBBTC ETHBTC BNBUSDT BTCUSDT ETHUSDT
         periods: 9,
         timeInterval: '5m',
+        useTrendConfirmation: true,
+        trendConfirmationPeriods: 50,
         active: true // vai ser usado futuramente para indicar quais estrategias estao habilitadas/desabilitadas
     }
 

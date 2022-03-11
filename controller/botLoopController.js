@@ -2,6 +2,8 @@ const moment = require('moment');
 const util = require('../lib/util');
 const request = require('../model/request');
 const smaIndicator = require('../indicators/sma');
+const candleController = require('../controller/candleController');
+const tradeController = require('../controller/tradeController');
 
 const forever = true;
 let strategy;
@@ -11,7 +13,12 @@ let candles;
 const startBotLoop = (paramStrategy) => {
     strategy = paramStrategy;
     // Quando houver varias estrategias, candlesNumber tera que ser o maior periods dentre todas as estrategias + 1
-    candlesNumber = strategy.periods + 1;
+    if (strategy.useTrendConfirmation) {
+        candlesNumber = strategy.trendConfirmationPeriods + 1;
+    } else {
+        candlesNumber = strategy.periods + 1;
+    }
+
     botLoop();
 }
 
@@ -21,13 +28,13 @@ const botLoop = async () => {
 
         // Calcula quando deve requisitar novos dados de candles
         let currentTime = moment();
-        let nextCandleTime = calculateNextCandleTime(moment());
+        let nextCandleTime = candleController.calculateNextCandleTime(moment(), strategy);
         let sleepTime = (nextCandleTime.unix() - currentTime.unix()) * 1000;
         await util.sleep(sleepTime);
      
         // Busca os candles recentes
         let rawCandleData = await request.getCandles(strategy.pair, strategy.timeInterval, candlesNumber);
-        candles = buildCandleData(rawCandleData);
+        candles = candleController.buildCandleData(rawCandleData);
 
         // Verifica se o ultimo candle esta fechado e o remove do array de dados caso ainda estiver aberto
         let lastCandleCloseTime = candles[candles.length - 1].closeTime;
@@ -44,48 +51,28 @@ const botLoop = async () => {
 
         // Executa a(s) estratégia(s) parametrizada(s)
         let sma = smaIndicator.getSMA(strategy.periods, candles);
+        let confirmationSma = smaIndicator.getSMA(strategy.trendConfirmationPeriods, candles);
         let lastClosedCandle = candles[candles.length - 1];
 
-        if (lastClosedCandle.openPrice < sma && lastClosedCandle.closePrice > sma) {
-            console.log(`Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}`);
+        if (lastClosedCandle.openPrice < sma && lastClosedCandle.closePrice > sma 
+                && (!strategy.useTrendConfirmation || lastClosedCandle.closePrice > confirmationSma)
+            ){
+            tradeController.doScalpTrade(strategy);
         }
+
+        registerLogs(sma, confirmationSma);
 
     } while (forever)
 }
 
-const calculateNextCandleTime = (currentTime) => {
-
-    let minutes = currentTime.minutes() + 1;
-    let candleInterval = 1;
-    if (strategy.timeInterval === '5m') candleInterval = 5;
-    
-    while (minutes % candleInterval !== 0) {
-        minutes++;
-    }
-
-    let nextCandleTime = currentTime.set({'minute': minutes, 'second': 00});
-    return nextCandleTime;
-}
-
-const buildCandleData = (rawCandleData) => {
-
-    let candles = [];
-
-    rawCandleData.forEach(candle => {
-
-        current = {
-            openPrice: parseFloat(candle[1]),
-            closePrice: parseFloat(candle[4]),
-            highPrice: parseFloat(candle[2]),
-            lowPrice: parseFloat(candle[3]),
-            openTime: candle[0],
-            closeTime: candle[6],
-            volume: candle[5],
-            numberOfTrades: candle[8] 
-        }
-        candles.push(current);  
-    });
-    return candles;
+// Funcao de debug para utilizacao apenas durante o desenvolvimento
+const registerLogs = (sma, confirmationSma) => {
+    console.log(`A SMA rápida é: ${sma}`);
+    console.log(`A SMA lenta (confirmação) é: ${confirmationSma}`);
+    console.log(`Ultimo candle fechado: open ${candles[candles.length - 1].openPrice} `
+        + `high ${candles[candles.length - 1].highPrice} low ${candles[candles.length - 1].lowPrice} `
+        + `close ${candles[candles.length - 1].closePrice}`
+    );
 }
 
 module.exports = {
