@@ -15,7 +15,8 @@ const config = {
     endpoint: {
         systemStatus: '/sapi/v1/system/status',
         exchangeInfo: '/api/v3/exchangeInfo',
-        candlestickData: '/api/v3/klines'
+        candlestickData: '/api/v3/klines',
+        accountInformation: '/api/v3/account'
     },
 
     strategy: {

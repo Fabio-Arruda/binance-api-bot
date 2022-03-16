@@ -26,6 +26,10 @@ const botLoop = async () => {
 
     do {
 
+        // Bloco de verificações da conta usado apenas durante desenvolvimento. Remover depois de pronto.
+        let accountData = await request.getAccountInformation();
+        console.log(accountData);
+
         // Calcula quando deve requisitar novos dados de candles
         let currentTime = moment();
         let nextCandleTime = candleController.calculateNextCandleTime(moment(), strategy);
