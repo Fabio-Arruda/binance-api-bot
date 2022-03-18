@@ -16,7 +16,8 @@ const config = {
         systemStatus: '/sapi/v1/system/status',
         exchangeInfo: '/api/v3/exchangeInfo',
         candlestickData: '/api/v3/klines',
-        accountInformation: '/api/v3/account'
+        accountInformation: '/api/v3/account',
+        newOrder: '/api/v3/order'
     },
 
     strategy: {
@@ -24,6 +25,8 @@ const config = {
         pair: 'BNBUSDT', // BNBBTC ETHBTC BNBUSDT BTCUSDT ETHUSDT
         periods: 9,
         timeInterval: '5m',
+        stopMargin: 0.1,
+        tradeAmount: 1,
         useTrendConfirmation: true,
         trendConfirmationPeriods: 50,
         active: true // vai ser usado futuramente para indicar quais estrategias estao habilitadas/desabilitadas

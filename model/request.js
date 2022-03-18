@@ -48,7 +48,36 @@ const getAccountInformation = async () => {
     }
 }
 
+const openNewOrder = async (symbol, side, type, quantity) => {
+    
+    let timestamp = moment().unix() * 1000;
+    let queryString = `symbol=${symbol}&side=${side}&type=${type}&quantity=${quantity}&timestamp=${timestamp}`;
+    let signature = util.buildSignature(queryString);
+
+    try {
+        let response = await axios({
+            method: 'post',
+            url: baseAPI + endpoint.newOrder,
+            headers: {
+                'X-MBX-APIKEY': apiKey
+            },
+            params: {
+                symbol: symbol,
+                side: side,
+                type: type,
+                quantity: quantity,
+                timestamp: timestamp,
+                signature: signature
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 module.exports = {
     getCandles: getCandles,
+    openNewOrder: openNewOrder,
     getAccountInformation: getAccountInformation
 }

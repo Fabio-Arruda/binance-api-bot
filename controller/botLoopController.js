@@ -24,11 +24,11 @@ const startBotLoop = (paramStrategy) => {
 
 const botLoop = async () => {
 
-    do {
+    // Bloco de verificações da conta usado apenas durante desenvolvimento. Remover depois de pronto.
+    let accountData = await request.getAccountInformation();
+    console.log(accountData);
 
-        // Bloco de verificações da conta usado apenas durante desenvolvimento. Remover depois de pronto.
-        let accountData = await request.getAccountInformation();
-        console.log(accountData);
+    do {
 
         // Calcula quando deve requisitar novos dados de candles
         let currentTime = moment();
