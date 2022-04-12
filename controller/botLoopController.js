@@ -24,6 +24,7 @@ const startBotLoop = (paramStrategy) => {
 
 const botLoop = async () => {
 
+    console.log(`Stalker Bot iniciado com sucesso às ${moment().format('HH:mm:ss')}`);
     // Bloco de verificações da conta usado apenas durante desenvolvimento. Remover depois de pronto.
     let accountData = await request.getAccountInformation();
     console.log(accountData);
@@ -37,34 +38,44 @@ const botLoop = async () => {
         await util.sleep(sleepTime);
      
         // Busca os candles recentes
-        let rawCandleData = await request.getCandles(strategy.pair, strategy.timeInterval, candlesNumber);
-        candles = candleController.buildCandleData(rawCandleData);
-
-        // Verifica se o ultimo candle esta fechado e o remove do array de dados caso ainda estiver aberto
-        let lastCandleCloseTime = candles[candles.length - 1].closeTime;
-        if (lastCandleCloseTime > (moment().unix() * 1000)) {
-            candles.pop();
-        } else {
-            candles.shift();
+        let rawCandleData = null;
+        try {
+            rawCandleData = await request.getCandles(strategy.pair, strategy.timeInterval, candlesNumber);
+        } catch (error) {
+            console.log('Nao foi possivel trazer as informacoes dos ultimos candles')
+            console.log(error)
         }
 
-        console.log (
-            `Hora atual: ${moment().format('HH:mm:ss')}. Recebido candle com hora de fechamento: ` + 
-            `${moment(candles[candles.length - 1].closeTime).format('HH:mm:ss')}`
-        );
+        if (rawCandleData !== null) {
 
-        // Executa a(s) estratégia(s) parametrizada(s)
-        let sma = smaIndicator.getSMA(strategy.periods, candles);
-        let confirmationSma = smaIndicator.getSMA(strategy.trendConfirmationPeriods, candles);
-        let lastClosedCandle = candles[candles.length - 1];
-
-        if (lastClosedCandle.openPrice < sma && lastClosedCandle.closePrice > sma 
-                && (!strategy.useTrendConfirmation || lastClosedCandle.closePrice > confirmationSma)
-            ){
-            tradeController.doScalpTrade(strategy);
+            candles = candleController.buildCandleData(rawCandleData);
+    
+            // Verifica se o ultimo candle esta fechado e o remove do array de dados caso ainda estiver aberto
+            let lastCandleCloseTime = candles[candles.length - 1].closeTime;
+            if (lastCandleCloseTime > (moment().unix() * 1000)) {
+                candles.pop();
+            } else {
+                candles.shift();
+            }
+    
+            console.log (
+                `Hora atual: ${moment().format('HH:mm:ss')}. Recebido candle com hora de fechamento: ` + 
+                `${moment(candles[candles.length - 1].closeTime).format('HH:mm:ss')}`
+            );
+    
+            // Executa a(s) estratégia(s) parametrizada(s)
+            let sma = smaIndicator.getSMA(strategy.periods, candles);
+            let confirmationSma = smaIndicator.getSMA(strategy.trendConfirmationPeriods, candles);
+            let lastClosedCandle = candles[candles.length - 1];
+    
+            if (lastClosedCandle.openPrice < sma && lastClosedCandle.closePrice > sma 
+                    && (!strategy.useTrendConfirmation || lastClosedCandle.closePrice > confirmationSma)
+                ){
+                tradeController.doScalpTrade(strategy, lastClosedCandle);
+            }
+    
+            registerLogs(sma, confirmationSma);
         }
-
-        registerLogs(sma, confirmationSma);
 
     } while (forever)
 }

@@ -28,7 +28,7 @@ const getAccountInformation = async () => {
     
     let timestamp = moment().unix() * 1000;
     let queryString = `timestamp=${timestamp}`;
-    let signature = util.buildSignature(queryString); //falta passar a assinatura para o axios
+    let signature = util.buildSignature(queryString);
 
     try {
         let response = await axios({

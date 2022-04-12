@@ -13,7 +13,7 @@ const getSMA = (periods, candles) => {
         closePriceSum += candle.closePrice;
     })
 
-    return (closePriceSum / periods).toFixed(2);
+    return parseFloat((closePriceSum / periods).toFixed(1));
 }
 
 module.exports = {
