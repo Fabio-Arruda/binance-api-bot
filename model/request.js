@@ -48,12 +48,30 @@ const getAccountInformation = async () => {
     }
 }
 
-const openNewOrder = async (symbol, side, type, quantity) => {
+const openNewOrder = async (symbol, side, type, quantity, stopPrice) => {
     
     let timestamp = moment().unix() * 1000;
-    let queryString = `symbol=${symbol}&side=${side}&type=${type}&quantity=${quantity}&timestamp=${timestamp}`;
-    let signature = util.buildSignature(queryString);
+    let queryString = `symbol=${symbol}&side=${side}&type=${type}&quantity=${quantity}`;
+    let params = {
+        symbol: symbol,
+        side: side,
+        type: type,
+        quantity: quantity
+    }
 
+    if (type === 'STOP_LOSS_LIMIT' || type === 'TAKE_PROFIT_LIMIT') {
+        params.stopPrice = stopPrice;
+        params.price = stopPrice;
+        params.timeInForce = 'GTC'; // "Good Til Canceled". A ordem permanecerá no book de ofertas até ser cancelada.
+        queryString += `&stopPrice=${stopPrice}&price=${stopPrice}&timeInForce=${params.timeInForce}`;
+    }
+
+    params.timestamp = timestamp;
+    queryString += `&timestamp=${timestamp}`;
+
+    let signature = util.buildSignature(queryString);
+    params.signature = signature;
+    
     try {
         let response = await axios({
             method: 'post',
@@ -61,14 +79,7 @@ const openNewOrder = async (symbol, side, type, quantity) => {
             headers: {
                 'X-MBX-APIKEY': apiKey
             },
-            params: {
-                symbol: symbol,
-                side: side,
-                type: type,
-                quantity: quantity,
-                timestamp: timestamp,
-                signature: signature
-            }
+            params: params
         });
         return response.data;
     } catch (error) {

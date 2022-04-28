@@ -8,14 +8,22 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
     let result = await request.openNewOrder(strategy.pair, 'BUY', 'MARKET', strategy.tradeAmount);
     console.log('Ordem a Mercado:');
     console.log(result);
-
+    
     let buyPrice = calculateBuyPrice(result.fills);
     let stopPrice = calculateStopPrice(lastClosedCandle, strategy);
     let targetPrice = calculateTargetPrice(buyPrice, stopPrice);
-
+    
     console.log(`O valor de compra é ${buyPrice}`)
     console.log(`STOP: ${stopPrice}`)
     console.log(`Alvo: ${targetPrice}`)
+    
+    let stopResult = await request.openNewOrder(strategy.pair, 'SELL', 'STOP_LOSS_LIMIT', strategy.tradeAmount, stopPrice);
+    let takeProfitResult = await request.openNewOrder(strategy.pair, 'SELL', 'TAKE_PROFIT_LIMIT', strategy.tradeAmount, targetPrice);
+    
+    console.log(`RESULTADO DA ORDEM STOP`)
+    console.log(stopResult)
+    console.log(`RESULTADO DA ORDEM TAKE PROFIT`)
+    console.log(takeProfitResult)
 }
 
 const calculateBuyPrice = (orderFills) => {

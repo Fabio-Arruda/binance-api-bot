@@ -46,7 +46,7 @@ const botLoop = async () => {
             console.log(error)
         }
 
-        if (rawCandleData !== null) {
+        if (rawCandleData) {
 
             candles = candleController.buildCandleData(rawCandleData);
     
@@ -58,17 +58,18 @@ const botLoop = async () => {
                 candles.shift();
             }
     
-            console.log (
-                `Hora atual: ${moment().format('HH:mm:ss')}. Recebido candle com hora de fechamento: ` + 
-                `${moment(candles[candles.length - 1].closeTime).format('HH:mm:ss')}`
-            );
+            // console.log (
+            //     `Hora atual: ${moment().format('HH:mm:ss')}. Recebido candle com hora de fechamento: ` + 
+            //     `${moment(candles[candles.length - 1].closeTime).format('HH:mm:ss')}`
+            // );
     
             // Executa a(s) estratégia(s) parametrizada(s)
             let sma = smaIndicator.getSMA(strategy.periods, candles);
             let confirmationSma = smaIndicator.getSMA(strategy.trendConfirmationPeriods, candles);
             let lastClosedCandle = candles[candles.length - 1];
     
-            if (lastClosedCandle.openPrice < sma && lastClosedCandle.closePrice > sma 
+            if (lastClosedCandle.openPrice < sma
+                    && lastClosedCandle.closePrice > sma 
                     && (!strategy.useTrendConfirmation || lastClosedCandle.closePrice > confirmationSma)
                 ){
                 tradeController.doScalpTrade(strategy, lastClosedCandle);
