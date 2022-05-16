@@ -17,7 +17,8 @@ const config = {
         exchangeInfo: '/api/v3/exchangeInfo',
         candlestickData: '/api/v3/klines',
         accountInformation: '/api/v3/account',
-        newOrder: '/api/v3/order'
+        newOrder: '/api/v3/order',
+        getAllOrders: '/api/v3/allOrders'
     },
 
     strategy: {

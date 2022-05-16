@@ -87,8 +87,34 @@ const openNewOrder = async (symbol, side, type, quantity, stopPrice) => {
     }
 }
 
+const getAllOrders = async (symbol) => {
+
+    let timestamp = moment().unix() * 1000;
+    let queryString = `symbol=${symbol}&timestamp=${timestamp}`;
+    let signature = util.buildSignature(queryString);
+
+    try {
+        let response = await axios({
+            method: 'get',
+            url: baseAPI + endpoint.getAllOrders,
+            headers: {
+                'X-MBX-APIKEY': apiKey
+            },
+            params: {
+                symbol: symbol,
+                timestamp: timestamp,
+                signature: signature
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 module.exports = {
     getCandles: getCandles,
     openNewOrder: openNewOrder,
-    getAccountInformation: getAccountInformation
+    getAccountInformation: getAccountInformation,
+    getAllOrders: getAllOrders
 }

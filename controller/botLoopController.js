@@ -25,9 +25,13 @@ const startBotLoop = (paramStrategy) => {
 const botLoop = async () => {
 
     console.log(`Stalker Bot iniciado com sucesso às ${moment().format('HH:mm:ss')}`);
+
     // Bloco de verificações da conta usado apenas durante desenvolvimento. Remover depois de pronto.
     let accountData = await request.getAccountInformation();
     console.log(accountData);
+    
+    let allOrders = await request.getAllOrders(strategy.pair);
+    console.log(allOrders);
 
     do {
 
@@ -83,12 +87,13 @@ const botLoop = async () => {
 
 // Funcao de debug para utilizacao apenas durante o desenvolvimento
 const registerLogs = (sma, confirmationSma) => {
-    console.log(`A SMA rápida é: ${sma}`);
-    console.log(`A SMA lenta (confirmação) é: ${confirmationSma}`);
-    console.log(`Ultimo candle fechado: open ${candles[candles.length - 1].openPrice} `
-        + `high ${candles[candles.length - 1].highPrice} low ${candles[candles.length - 1].lowPrice} `
-        + `close ${candles[candles.length - 1].closePrice}`
-    );
+    console.log('-')
+    // console.log(`A SMA rápida é: ${sma}`);
+    // console.log(`A SMA lenta (confirmação) é: ${confirmationSma}`);
+    // console.log(`Ultimo candle fechado: open ${candles[candles.length - 1].openPrice} `
+    //     + `high ${candles[candles.length - 1].highPrice} low ${candles[candles.length - 1].lowPrice} `
+    //     + `close ${candles[candles.length - 1].closePrice}`
+    // );
 }
 
 module.exports = {

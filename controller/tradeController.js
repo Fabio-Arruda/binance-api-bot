@@ -3,6 +3,7 @@ const request = require('../model/request');
 
 const doScalpTrade = async (strategy, lastClosedCandle) => {
 
+    console.log('\n--------------------------------------------------------\n')
     console.log(`---> Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}`);
 
     let result = await request.openNewOrder(strategy.pair, 'BUY', 'MARKET', strategy.tradeAmount);
@@ -24,12 +25,13 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
     console.log(stopResult)
     console.log(`RESULTADO DA ORDEM TAKE PROFIT`)
     console.log(takeProfitResult)
+    console.log('\n--------------------------------------------------------\n')
 }
 
 const calculateBuyPrice = (orderFills) => {
     let pricesSum = 0;
     orderFills.forEach( fill => {
-        pricesSum += fill.price;
+        pricesSum += parseFloat(fill.price);
     });
     return parseFloat((pricesSum / orderFills.length).toFixed(1));
 }
