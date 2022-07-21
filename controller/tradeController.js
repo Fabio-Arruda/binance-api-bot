@@ -26,6 +26,8 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
     console.log(`RESULTADO DA ORDEM TAKE PROFIT`)
     console.log(takeProfitResult)
     console.log('\n--------------------------------------------------------\n')
+
+    // Montar um objeto dizendo que existe um trade ativo, qual o valor de entrada, stop e alvo, para passar a monitorar com o socket
 }
 
 const calculateBuyPrice = (orderFills) => {

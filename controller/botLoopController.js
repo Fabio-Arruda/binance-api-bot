@@ -1,6 +1,7 @@
 const moment = require('moment');
 const util = require('../lib/util');
 const request = require('../model/request');
+const socket = require('../model/socket');
 const smaIndicator = require('../indicators/sma');
 const candleController = require('../controller/candleController');
 const tradeController = require('../controller/tradeController');
@@ -10,7 +11,7 @@ let strategy;
 let candlesNumber;
 let candles;
 
-const startBotLoop = (paramStrategy) => {
+const startBotLoop = async (paramStrategy) => {
     strategy = paramStrategy;
     // Quando houver varias estrategias, candlesNumber tera que ser o maior periods dentre todas as estrategias + 1
     if (strategy.useTrendConfirmation) {
@@ -19,17 +20,22 @@ const startBotLoop = (paramStrategy) => {
         candlesNumber = strategy.periods + 1;
     }
 
-    botLoop();
+    socket.connectWebSocket()
+    let socketSuccess = await socket.isConnected()
+    if (socketSuccess) {
+        botLoop();
+    } else {
+        console.log('Nao foi possivel iniciar o socket, aplicacao encerrada')
+    }
 }
 
 const botLoop = async () => {
 
     console.log(`Stalker Bot iniciado com sucesso às ${moment().format('HH:mm:ss')}`);
 
-    // Bloco de verificações da conta usado apenas durante desenvolvimento. Remover depois de pronto.
+    // Bloco de verificações da conta usado apenas durante desenvolvimento.
     let accountData = await request.getAccountInformation();
     console.log(accountData);
-    
     let allOrders = await request.getAllOrders(strategy.pair);
     console.log(allOrders);
 

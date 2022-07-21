@@ -6,8 +6,10 @@ const config = {
     api: {
         // Production endpoint
         // baseEndpoint: 'https://api.binance.com',
+        // socketBaseEndpoint: 'wss://stream.binance.com:9443',
         // Spot test Binance endpoint
         baseEndpoint: 'https://testnet.binance.vision',
+        socketBaseEndpoint: 'wss://testnet.binance.vision',
         apiKey: process.env.API_KEY,
         secretKey: process.env.SECRET_KEY,
     },
