@@ -1,33 +1,55 @@
 const moment = require('moment');
 const request = require('../model/request');
+const socket = require('../model/socket');
+
+let openTrade = null
 
 const doScalpTrade = async (strategy, lastClosedCandle) => {
 
-    console.log('\n--------------------------------------------------------\n')
-    console.log(`---> Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}`);
+    let hasOpenTrade = openTrade !== null
 
-    let result = await request.openNewOrder(strategy.pair, 'BUY', 'MARKET', strategy.tradeAmount);
-    console.log('Ordem a Mercado:');
-    console.log(result);
-    
-    let buyPrice = calculateBuyPrice(result.fills);
-    let stopPrice = calculateStopPrice(lastClosedCandle, strategy);
-    let targetPrice = calculateTargetPrice(buyPrice, stopPrice);
-    
-    console.log(`O valor de compra é ${buyPrice}`)
-    console.log(`STOP: ${stopPrice}`)
-    console.log(`Alvo: ${targetPrice}`)
-    
-    let stopResult = await request.openNewOrder(strategy.pair, 'SELL', 'STOP_LOSS_LIMIT', strategy.tradeAmount, stopPrice);
-    let takeProfitResult = await request.openNewOrder(strategy.pair, 'SELL', 'TAKE_PROFIT_LIMIT', strategy.tradeAmount, targetPrice);
-    
-    console.log(`RESULTADO DA ORDEM STOP`)
-    console.log(stopResult)
-    console.log(`RESULTADO DA ORDEM TAKE PROFIT`)
-    console.log(takeProfitResult)
-    console.log('\n--------------------------------------------------------\n')
+    if (!hasOpenTrade) {
+        console.log('\n--------------------------------------------------------\n')
+        console.log(`---> Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}`);
 
-    // Montar um objeto dizendo que existe um trade ativo, qual o valor de entrada, stop e alvo, para passar a monitorar com o socket
+        let result = await request.openNewOrder(strategy.pair, 'BUY', 'MARKET', strategy.tradeAmount);
+        console.log('Ordem a Mercado:');
+        console.log(result);
+        
+        let buyPrice = calculateBuyPrice(result.fills);
+        let stopPrice = calculateStopPrice(lastClosedCandle, strategy);
+        let targetPrice = calculateTargetPrice(buyPrice, stopPrice);
+        
+        let stopResult = await request.openNewOrder(strategy.pair, 'SELL', 'STOP_LOSS_LIMIT', strategy.tradeAmount, stopPrice);
+        let takeProfitResult = await request.openNewOrder(strategy.pair, 'SELL', 'TAKE_PROFIT_LIMIT', strategy.tradeAmount, targetPrice);
+        
+        console.log(`RESULTADO DA ORDEM STOP`)
+        console.log(stopResult)
+        console.log(`RESULTADO DA ORDEM TAKE PROFIT`)
+        console.log(takeProfitResult)
+        
+        openTrade = {
+            entry: buyPrice,
+            target: targetPrice,
+            targetOrderId: takeProfitResult.orderId,
+            stop: stopPrice,
+            stopOrderId: stopResult.orderId
+        }
+        
+        console.log('Open Trade')
+        console.log(openTrade)
+        console.log('\n--------------------------------------------------------\n')
+
+        socket.subscribeKline(strategy.pair, strategy.timeInterval)
+        let webSocket = socket.getSocket()
+        webSocket.onmessage = (event) => {
+            handleSocketMessage(event.data)
+        }
+    }
+}
+
+const handleSocketMessage = (data) => {
+    console.log(data)
 }
 
 const calculateBuyPrice = (orderFills) => {

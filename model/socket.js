@@ -39,7 +39,21 @@ const isConnected = async () => {
     return false
 }
 
+const getSocket = () => {
+    return webSocket
+}
+
+const subscribeKline = (symbol, interval) => {
+    webSocket.send(JSON.stringify({
+        method: 'SUBSCRIBE',
+        params: [`${symbol.toLowerCase()}@kline_${interval}`],
+        id: 1
+    }))
+}
+
 module.exports = {
     connectWebSocket: connectWebSocket,
-    isConnected: isConnected
+    isConnected: isConnected,
+    getSocket: getSocket,
+    subscribeKline: subscribeKline
 }
