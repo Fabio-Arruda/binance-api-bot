@@ -75,7 +75,7 @@ const openNewOrder = async (symbol, side, type, quantity, stopPrice) => {
     try {
         let response = await axios({
             method: 'post',
-            url: baseAPI + endpoint.newOrder,
+            url: baseAPI + endpoint.order,
             headers: {
                 'X-MBX-APIKEY': apiKey
             },
@@ -112,9 +112,63 @@ const getAllOrders = async (symbol) => {
     }
 }
 
+const checkOrder = async (symbol, orderId) => {
+
+    let timestamp = moment().unix() * 1000;
+    let queryString = `symbol=${symbol}&orderId=${orderId}&timestamp=${timestamp}`;
+    let signature = util.buildSignature(queryString);
+
+    try {
+        let response = await axios({
+            method: 'get',
+            url: baseAPI + endpoint.order,
+            headers: {
+                'X-MBX-APIKEY': apiKey
+            },
+            params: {
+                symbol: symbol,
+                orderId: orderId,
+                timestamp: timestamp,
+                signature: signature
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const cancelOrder = async (symbol, orderId) => {
+
+    let timestamp = moment().unix() * 1000;
+    let queryString = `symbol=${symbol}&orderId=${orderId}&timestamp=${timestamp}`;
+    let signature = util.buildSignature(queryString);
+
+    try {
+        let response = await axios({
+            method: 'delete',
+            url: baseAPI + endpoint.order,
+            headers: {
+                'X-MBX-APIKEY': apiKey
+            },
+            params: {
+                symbol: symbol,
+                orderId: orderId, 
+                timestamp: timestamp,
+                signature: signature
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 module.exports = {
     getCandles: getCandles,
     openNewOrder: openNewOrder,
     getAccountInformation: getAccountInformation,
-    getAllOrders: getAllOrders
+    getAllOrders: getAllOrders,
+    checkOrder: checkOrder,
+    cancelOrder: cancelOrder
 }
