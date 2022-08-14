@@ -80,7 +80,7 @@ const botLoop = async () => {
     
             if (lastClosedCandle.openPrice < sma
                     && lastClosedCandle.closePrice > sma 
-                    && (!strategy.useTrendConfirmation || lastClosedCandle.closePrice > confirmationSma)
+                    && (!strategy.useTrendConfirmation || (lastClosedCandle.closePrice > confirmationSma && sma > confirmationSma))
                 ){
                 tradeController.doScalpTrade(strategy, lastClosedCandle);
             }

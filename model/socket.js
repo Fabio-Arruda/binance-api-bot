@@ -51,9 +51,18 @@ const subscribeKline = (symbol, interval) => {
     }))
 }
 
+const unsubscribeKline = (symbol, interval) => {
+    webSocket.send(JSON.stringify({
+        method: 'UNSUBSCRIBE',
+        params: [`${symbol.toLowerCase()}@kline_${interval}`],
+        id: 2
+    }))
+}
+
 module.exports = {
     connectWebSocket: connectWebSocket,
     isConnected: isConnected,
     getSocket: getSocket,
-    subscribeKline: subscribeKline
+    subscribeKline: subscribeKline,
+    unsubscribeKline: unsubscribeKline
 }

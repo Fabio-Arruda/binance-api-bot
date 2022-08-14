@@ -30,6 +30,7 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
         
         openTrade = {
             symbol: strategy.pair,
+            timeInterval: strategy.timeInterval,
             entry: buyPrice,
             target: targetPrice,
             targetOrderId: takeProfitResult.orderId,
@@ -44,58 +45,65 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
         socket.subscribeKline(strategy.pair, strategy.timeInterval)
         let webSocket = socket.getSocket()
         webSocket.onmessage = (event) => {
-            handleSocketMessage(event.data)
+            handleSocketMessage(JSON.parse(event.data))
         }
     }
 }
 
 const handleSocketMessage = async (data) => {
+
     console.log(data)
 
-    let currentCandleMaxPrice = data.k.h
-    let currentCandleMinPrice = data.k.l
+    try {
+        let currentCandleMaxPrice = data.k.h
+        let currentCandleMinPrice = data.k.l
 
-    if (currentCandleMaxPrice >= openTrade.target) {
-        // verifica se executou a ordem alvo
-        let checkOrderResponse = await request.checkOrder(openTrade.symbol, openTrade.targetOrderId)
-        console.log('checkOrderResponse')
-        console.log(checkOrderResponse)
-        
-        // se sim, cancela a ordem stop
-        if (!checkOrderResponse.isWorking) {
-            let cancelOrderResponse = await request.cancelOrder(openTrade.symbol, openTrade.stopOrderId)
-            console.log('cancelOrderResponse')
-            console.log(cancelOrderResponse)
-            
-            if (cancelOrderResponse.status === 'CANCELED') {
-                // Limpa o objeto openTrade
-                openTrade = null
-                // Dar um unsubscribe no socket também quando fechar o trade
-                // tem que remover o onmessage anterior???
+        if (currentCandleMaxPrice >= openTrade.target) {
+            // verifica se executou a ordem alvo
+            let checkOrderResponse = await request.checkOrder(openTrade.symbol, openTrade.targetOrderId)
+            console.log('checkOrderResponse')
+            console.log(checkOrderResponse)
+
+            // se sim, cancela a ordem stop
+            if (checkOrderResponse.status === 'FILLED') {
+                console.log('O TAKE PROFIT foi executado')
+                let cancelOrderResponse = await request.cancelOrder(openTrade.symbol, openTrade.stopOrderId)
+                console.log('cancelOrderResponse')
+                console.log(cancelOrderResponse)
+                
+                if (cancelOrderResponse.status === 'CANCELED') {
+                    console.log('Ordem STOP cancelada')
+                    socket.unsubscribeKline(openTrade.symbol, openTrade.timeInterval)
+                    openTrade = null
+                    // tem que remover o onmessage anterior???
+                }
             }
         }
-    }
-    
-    if (currentCandleMinPrice <= openTrade.stop) {
-        // verifica se executou a ordem stop
-        let checkOrderResponse = await request.checkOrder(openTrade.symbol, openTrade.stopOrderId)
-        console.log('checkOrderResponse')
-        console.log(checkOrderResponse)
         
-        // se sim, cancela a ordem alvo
-        if (!checkOrderResponse.isWorking) {
-            let cancelOrderResponse = await request.cancelOrder(openTrade.symbol, openTrade.targetOrderId)
-            console.log('cancelOrderResponse')
-            console.log(cancelOrderResponse)
+        if (currentCandleMinPrice <= openTrade.stop) {
+            // verifica se executou a ordem stop
+            let checkOrderResponse = await request.checkOrder(openTrade.symbol, openTrade.stopOrderId)
+            console.log('checkOrderResponse')
+            console.log(checkOrderResponse)
             
-            if (cancelOrderResponse.status === 'CANCELED') {
-                // Limpa o objeto openTrade
-                openTrade = null
-                // Dar um unsubscribe no socket também quando fechar o trade
-                // tem que remover o onmessage anterior???
+            // se sim, cancela a ordem alvo
+            if (checkOrderResponse.status === 'FILLED') {
+                console.log('O STOP foi executado')
+                let cancelOrderResponse = await request.cancelOrder(openTrade.symbol, openTrade.targetOrderId)
+                console.log('cancelOrderResponse')
+                console.log(cancelOrderResponse)
+                
+                if (cancelOrderResponse.status === 'CANCELED') {
+                    console.log('Ordem TAKE PROFIT cancelada')
+                    socket.unsubscribeKline(openTrade.symbol, openTrade.timeInterval)
+                    openTrade = null
+                    // tem que remover o onmessage anterior???
+                }
             }
-        }
-    }    
+        } 
+    } catch (error) {
+        console.log(error.message)
+    } 
 }
 
 const calculateBuyPrice = (orderFills) => {
