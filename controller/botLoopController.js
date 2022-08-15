@@ -37,6 +37,7 @@ const botLoop = async () => {
     let accountData = await request.getAccountInformation();
     console.log(accountData);
     let allOrders = await request.getAllOrders(strategy.pair);
+    allOrders = allOrders.filter(order => order.status === 'NEW')
     console.log(allOrders);
 
     do {
@@ -53,7 +54,7 @@ const botLoop = async () => {
             rawCandleData = await request.getCandles(strategy.pair, strategy.timeInterval, candlesNumber);
         } catch (error) {
             console.log('Nao foi possivel trazer as informacoes dos ultimos candles')
-            console.log(error)
+            console.log(error.message)
         }
 
         if (rawCandleData) {

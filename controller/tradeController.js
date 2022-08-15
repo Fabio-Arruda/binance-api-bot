@@ -45,14 +45,29 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
         socket.subscribeKline(strategy.pair, strategy.timeInterval)
         let webSocket = socket.getSocket()
         webSocket.onmessage = (event) => {
-            handleSocketMessage(JSON.parse(event.data))
+            handleSocketMessage(event)
         }
     }
 }
 
-const handleSocketMessage = async (data) => {
+const handleSocketMessage = (event) => {
+    let data = JSON.parse(event.data)
+    if (data.e === 'kline') {
+        followTrade(data)
+    } else {
+        if (data.result === null && data.id === 1) {
+            console.log('Websocket SUBSCRIBE')
+        } else if (data.result === null && data.id === 2) {
+            console.log('Websocket UNSUBSCRIBE')
+        } else {
+            console.log(data)
+        }
+    }
+}
 
-    console.log(data)
+const followTrade = async (data) => {
+
+    console.log('-> ws')
 
     try {
         let currentCandleMaxPrice = data.k.h
