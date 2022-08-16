@@ -94,7 +94,7 @@ const botLoop = async () => {
 
 // Funcao de debug para utilizacao apenas durante o desenvolvimento
 const registerLogs = (sma, confirmationSma) => {
-    console.log('-')
+    // console.log('-')
     // console.log(`A SMA rápida é: ${sma}`);
     // console.log(`A SMA lenta (confirmação) é: ${confirmationSma}`);
     // console.log(`Ultimo candle fechado: open ${candles[candles.length - 1].openPrice} `

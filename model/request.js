@@ -20,7 +20,7 @@ const getCandles = async (symbol, interval, candlesNumber) => {
         });
         return response.data;
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
     }
 }
 
@@ -44,7 +44,7 @@ const getAccountInformation = async () => {
         });
         return response.data;
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
     }
 }
 
@@ -83,7 +83,7 @@ const openNewOrder = async (symbol, side, type, quantity, stopPrice) => {
         });
         return response.data;
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
     }
 }
 
@@ -108,7 +108,7 @@ const getAllOrders = async (symbol) => {
         });
         return response.data;
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
     }
 }
 
@@ -134,7 +134,7 @@ const checkOrder = async (symbol, orderId) => {
         });
         return response.data;
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
     }
 }
 
@@ -160,7 +160,7 @@ const cancelOrder = async (symbol, orderId) => {
         });
         return response.data;
     } catch (error) {
-        console.log(error);
+        console.log(error.message);
     }
 }
 

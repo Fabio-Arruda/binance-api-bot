@@ -73,7 +73,7 @@ const followTrade = async (data) => {
         let currentCandleMaxPrice = data.k.h
         let currentCandleMinPrice = data.k.l
 
-        if (currentCandleMaxPrice >= openTrade.target) {
+        if (openTrade && currentCandleMaxPrice >= openTrade.target) {
             // verifica se executou a ordem alvo
             let checkOrderResponse = await request.checkOrder(openTrade.symbol, openTrade.targetOrderId)
             console.log('checkOrderResponse')
@@ -95,7 +95,7 @@ const followTrade = async (data) => {
             }
         }
         
-        if (currentCandleMinPrice <= openTrade.stop) {
+        if (openTrade && currentCandleMinPrice <= openTrade.stop) {
             // verifica se executou a ordem stop
             let checkOrderResponse = await request.checkOrder(openTrade.symbol, openTrade.stopOrderId)
             console.log('checkOrderResponse')
