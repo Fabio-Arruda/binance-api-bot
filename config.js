@@ -32,6 +32,9 @@ const config = {
         tradeAmount: 1,
         useTrendConfirmation: true,
         trendConfirmationPeriods: 50,
+        minWorthTrade: 0.5,
+        maxRiskTrade: 2,
+        stretchLimit: 2,
         active: true // vai ser usado futuramente para indicar quais estrategias estao habilitadas/desabilitadas
     }
 

@@ -77,12 +77,11 @@ const botLoop = async () => {
             // Executa a(s) estratégia(s) parametrizada(s)
             let sma = smaIndicator.getSMA(strategy.periods, candles);
             let confirmationSma = smaIndicator.getSMA(strategy.trendConfirmationPeriods, candles);
-            let lastClosedCandle = candles[candles.length - 1];
+            let lastClosedCandle = candles[candles.length - 1]
+            let previousCandle = candles[candles.length - 2]
     
-            if (lastClosedCandle.openPrice < sma
-                    && lastClosedCandle.closePrice > sma 
-                    && (!strategy.useTrendConfirmation || (lastClosedCandle.closePrice > confirmationSma && sma > confirmationSma))
-                ){
+            let tradeConditionsOK = checkTradeConditions(lastClosedCandle, previousCandle, sma, confirmationSma)
+            if (tradeConditionsOK){
                 tradeController.doScalpTrade(strategy, lastClosedCandle);
             }
     
@@ -90,6 +89,19 @@ const botLoop = async () => {
         }
 
     } while (forever)
+}
+
+const checkTradeConditions = (lastClosedCandle, previousCandle, sma, confirmationSma) => {
+
+    let priceCrossedAverage = (lastClosedCandle.openPrice < sma && lastClosedCandle.closePrice > sma)
+        || (previousCandle.openPrice < sma && lastClosedCandle.closePrice > sma)
+    let worthTrade = lastClosedCandle.closePrice - lastClosedCandle.openPrice >= strategy.minWorthTrade
+    let limitedRisk = lastClosedCandle.closePrice - lastClosedCandle.lowPrice <= strategy.maxRiskTrade
+    let stretchedMarket = sma - confirmationSma > strategy.stretchLimit
+    let hasConfirmation = !strategy.useTrendConfirmation
+        || (lastClosedCandle.closePrice > confirmationSma && sma > confirmationSma && !stretchedMarket)
+
+    return priceCrossedAverage && worthTrade && limitedRisk && hasConfirmation
 }
 
 // Funcao de debug para utilizacao apenas durante o desenvolvimento
