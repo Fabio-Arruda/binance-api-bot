@@ -12,56 +12,52 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
         console.log('\n--------------------------------------------------------\n')
         console.log(`---> Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}`);
 
-        let result = await request.openNewOrder(strategy.pair, 'BUY', 'MARKET', strategy.tradeAmount);
-        console.log('Ordem a Mercado:');
-        console.log(result);
-        
-        let buyPrice = calculateBuyPrice(result.fills);
-        let stopPrice = calculateStopPrice(lastClosedCandle, strategy);
-        let targetPrice = calculateTargetPrice(buyPrice, stopPrice);
-        
-        let stopResult = await request.openNewOrder(strategy.pair, 'SELL', 'STOP_LOSS_LIMIT', strategy.tradeAmount, stopPrice);
-        let takeProfitResult = await request.openNewOrder(strategy.pair, 'SELL', 'TAKE_PROFIT_LIMIT', strategy.tradeAmount, targetPrice);
-        
-        console.log(`RESULTADO DA ORDEM STOP`)
-        console.log(stopResult)
-        console.log(`RESULTADO DA ORDEM TAKE PROFIT`)
-        console.log(takeProfitResult)
-        
-        openTrade = {
-            symbol: strategy.pair,
-            timeInterval: strategy.timeInterval,
-            entry: buyPrice,
-            target: targetPrice,
-            targetOrderId: takeProfitResult.orderId,
-            stop: stopPrice,
-            stopOrderId: stopResult.orderId
+        let result = null
+        try {
+            result = await request.openNewOrder(strategy.pair, 'BUY', 'MARKET', strategy.tradeAmount);
+        } catch (error) {
+            console.log('Nao foi possivel posicionar a nova ordem') 
         }
         
-        console.log('Open Trade')
-        console.log(openTrade)
-        console.log('\n--------------------------------------------------------\n')
+        if (result != null && result.fills) {
+            console.log('Ordem posicionada')
 
-        socket.subscribeKline(strategy.pair, strategy.timeInterval)
-        let webSocket = socket.getSocket()
-        webSocket.onmessage = (event) => {
-            handleSocketMessage(event)
-        }
-    }
-}
+            let buyPrice = calculateBuyPrice(result.fills);
+            let stopPrice = calculateStopPrice(lastClosedCandle, strategy);
+            let targetPrice = calculateTargetPrice(buyPrice, stopPrice);
+            
+            let stopResult = {}
+            try {
+                stopResult = await request.openNewOrder(strategy.pair, 'SELL', 'STOP_LOSS_LIMIT', strategy.tradeAmount, stopPrice);
+                console.log('STOP posicionado')
+            } catch (error) {
+                console.log('Nao foi possivel posicionar o STOP') 
+            }
+            
+            let takeProfitResult = {}
+            try {
+                takeProfitResult = await request.openNewOrder(strategy.pair, 'SELL', 'TAKE_PROFIT_LIMIT', strategy.tradeAmount, targetPrice);
+                console.log('TAKE PROFIT posicionado')
+            } catch (error) {
+                console.log('Nao foi possivel posicionar o TAKE PROFIT')
+            }
 
-const handleSocketMessage = (event) => {
-    let data = JSON.parse(event.data)
-    if (data.e === 'kline') {
-        followTrade(data)
-    } else {
-        if (data.result === null && data.id === 1) {
-            console.log('Websocket SUBSCRIBE')
-        } else if (data.result === null && data.id === 2) {
-            console.log('Websocket UNSUBSCRIBE')
-        } else {
-            console.log(data)
-        }
+            openTrade = {
+                symbol: strategy.pair,
+                timeInterval: strategy.timeInterval,
+                entry: buyPrice,
+                target: targetPrice,
+                targetOrderId: takeProfitResult.orderId ? takeProfitResult.orderId : 'NA',
+                stop: stopPrice,
+                stopOrderId: stopResult.orderId ? stopResult.orderId : 'NA'
+            }
+            
+            console.log('Open Trade')
+            console.log(openTrade)
+            console.log('\n--------------------------------------------------------\n')
+
+            socket.subscribeKline(strategy.pair, strategy.timeInterval)
+        } 
     }
 }
 
@@ -90,7 +86,6 @@ const followTrade = async (data) => {
                     console.log('Ordem STOP cancelada')
                     socket.unsubscribeKline(openTrade.symbol, openTrade.timeInterval)
                     openTrade = null
-                    // tem que remover o onmessage anterior???
                 }
             }
         }
@@ -112,7 +107,6 @@ const followTrade = async (data) => {
                     console.log('Ordem TAKE PROFIT cancelada')
                     socket.unsubscribeKline(openTrade.symbol, openTrade.timeInterval)
                     openTrade = null
-                    // tem que remover o onmessage anterior???
                 }
             }
         } 
@@ -138,5 +132,6 @@ const calculateTargetPrice = (buyPrice, stopPrice) => {
 }
 
 module.exports = {
-    doScalpTrade: doScalpTrade
+    doScalpTrade: doScalpTrade,
+    followTrade: followTrade
 }

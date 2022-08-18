@@ -1,8 +1,9 @@
-const WebSocket = require('ws');
-const config = require('../config');
-const util = require('../lib/util');
+const WebSocket = require('ws')
+const config = require('../config')
+const util = require('../lib/util')
+const tradeController = require('../controller/tradeController')
 
-let socketBaseEndpoint = config.api.socketBaseEndpoint;
+let socketBaseEndpoint = config.api.socketBaseEndpoint
 let webSocket = null
 
 const connectWebSocket = () => {
@@ -20,6 +21,10 @@ const connectWebSocket = () => {
     webSocket.onerror = (event) => {
         console.log('Erro com o WebSocket')
         console.log(event.error)
+    }
+
+    webSocket.onmessage = (event) => {
+        handleSocketMessage(event)
     }
 }
 
@@ -57,6 +62,21 @@ const unsubscribeKline = (symbol, interval) => {
         params: [`${symbol.toLowerCase()}@kline_${interval}`],
         id: 2
     }))
+}
+
+const handleSocketMessage = (event) => {
+    let data = JSON.parse(event.data)
+    if (data.e === 'kline') {
+        tradeController.followTrade(data)
+    } else {
+        if (data.result === null && data.id === 1) {
+            console.log('Websocket SUBSCRIBE')
+        } else if (data.result === null && data.id === 2) {
+            console.log('Websocket UNSUBSCRIBE')
+        } else {
+            console.log(data)
+        }
+    }
 }
 
 module.exports = {
