@@ -20,7 +20,6 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
         }
         
         if (result != null && result.fills) {
-            console.log('Ordem posicionada')
 
             let buyPrice = calculateBuyPrice(result.fills);
             let stopPrice = calculateStopPrice(lastClosedCandle, strategy);
@@ -29,7 +28,6 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
             let stopResult = {}
             try {
                 stopResult = await request.openNewOrder(strategy.pair, 'SELL', 'STOP_LOSS_LIMIT', strategy.tradeAmount, stopPrice);
-                console.log('STOP posicionado')
             } catch (error) {
                 console.log('Nao foi possivel posicionar o STOP') 
             }
@@ -37,7 +35,6 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
             let takeProfitResult = {}
             try {
                 takeProfitResult = await request.openNewOrder(strategy.pair, 'SELL', 'TAKE_PROFIT_LIMIT', strategy.tradeAmount, targetPrice);
-                console.log('TAKE PROFIT posicionado')
             } catch (error) {
                 console.log('Nao foi possivel posicionar o TAKE PROFIT')
             }
@@ -68,8 +65,6 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
 
 const followTrade = async (data) => {
 
-    console.log('-> ws')
-
     try {
         let currentCandleMaxPrice = data.k.h
         let currentCandleMinPrice = data.k.l
@@ -77,15 +72,11 @@ const followTrade = async (data) => {
         if (openTrade && currentCandleMaxPrice >= openTrade.target) {
             // verifica se executou a ordem alvo
             let checkOrderResponse = await request.checkOrder(openTrade.symbol, openTrade.targetOrderId)
-            console.log('checkOrderResponse')
-            console.log(checkOrderResponse)
 
             // se sim, cancela a ordem stop
             if (checkOrderResponse.status === 'FILLED') {
                 console.log('O TAKE PROFIT foi executado')
                 let cancelOrderResponse = await request.cancelOrder(openTrade.symbol, openTrade.stopOrderId)
-                console.log('cancelOrderResponse')
-                console.log(cancelOrderResponse)
                 
                 if (cancelOrderResponse.status === 'CANCELED') {
                     console.log('Ordem STOP cancelada')
@@ -98,15 +89,11 @@ const followTrade = async (data) => {
         if (openTrade && currentCandleMinPrice <= openTrade.stop) {
             // verifica se executou a ordem stop
             let checkOrderResponse = await request.checkOrder(openTrade.symbol, openTrade.stopOrderId)
-            console.log('checkOrderResponse')
-            console.log(checkOrderResponse)
             
             // se sim, cancela a ordem alvo
             if (checkOrderResponse.status === 'FILLED') {
                 console.log('O STOP foi executado')
                 let cancelOrderResponse = await request.cancelOrder(openTrade.symbol, openTrade.targetOrderId)
-                console.log('cancelOrderResponse')
-                console.log(cancelOrderResponse)
                 
                 if (cancelOrderResponse.status === 'CANCELED') {
                     console.log('Ordem TAKE PROFIT cancelada')
