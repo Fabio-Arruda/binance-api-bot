@@ -1,7 +1,7 @@
 const moment = require('moment');
 const request = require('../model/request');
-const socket = require('../model/socket');
 
+let socket = null
 let openTrade = null
 
 const doScalpTrade = async (strategy, lastClosedCandle) => {
@@ -56,7 +56,12 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
             console.log(openTrade)
             console.log('\n--------------------------------------------------------\n')
 
-            socket.subscribeKline(strategy.pair, strategy.timeInterval)
+            if (socket && socket.subscribeKline) {
+                socket.subscribeKline(strategy.pair, strategy.timeInterval)
+            } else {
+                socket = require('../model/socket');
+                socket.subscribeKline(strategy.pair, strategy.timeInterval)
+            }
         } 
     }
 }
