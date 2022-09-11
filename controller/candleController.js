@@ -1,23 +1,20 @@
 const calculateNextCandleTime = (currentTime, strategy) => {
-
-    let minutes = currentTime.minutes() + 1;
-    let candleInterval = 1;
-    if (strategy.timeInterval === '5m') candleInterval = 5;
+    let minutes = currentTime.minutes() + 1
+    let candleInterval = 1
+    if (strategy.timeInterval === '5m') candleInterval = 5
     
     while (minutes % candleInterval !== 0) {
-        minutes++;
+        minutes++
     }
 
-    let nextCandleTime = currentTime.set({'minute': minutes, 'second': 00});
-    return nextCandleTime;
+    let nextCandleTime = currentTime.set({'minute': minutes, 'second': 00})
+    return nextCandleTime
 }
 
 const buildCandleData = (rawCandleData) => {
-
-    let candles = [];
+    let candles = []
 
     rawCandleData.forEach(candle => {
-
         current = {
             openPrice: parseFloat(candle[1]),
             closePrice: parseFloat(candle[4]),
@@ -28,10 +25,10 @@ const buildCandleData = (rawCandleData) => {
             volume: candle[5],
             numberOfTrades: candle[8] 
         }
-        
-        candles.push(current);  
-    });
-    return candles;
+
+        candles.push(current)  
+    })
+    return candles
 }
 
 module.exports = {

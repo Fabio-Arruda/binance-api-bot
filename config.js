@@ -1,8 +1,7 @@
-const dotenv = require('dotenv');
-dotenv.config();
+const dotenv = require('dotenv')
+dotenv.config()
 
 const config = {
-
     api: {
         // Production endpoint
         // baseEndpoint: 'https://api.binance.com',
@@ -25,7 +24,7 @@ const config = {
 
     strategy: {
         name: 'sma',
-        pair: 'BNBUSDT', // BNBBTC ETHBTC BNBUSDT BTCUSDT ETHUSDT
+        pair: 'BNBUSDT',
         periods: 9,
         timeInterval: '5m',
         stopMargin: 0.1,
@@ -35,10 +34,8 @@ const config = {
         trendConfirmationPeriods: 50,
         minWorthTrade: 0.5,
         maxRiskTrade: 2,
-        stretchLimit: 2,
-        active: true // vai ser usado futuramente para indicar quais estrategias estao habilitadas/desabilitadas
+        stretchLimit: 2
     }
-
 }
 
-module.exports = config;
+module.exports = config

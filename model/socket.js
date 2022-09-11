@@ -7,7 +7,6 @@ let socketBaseEndpoint = config.api.socketBaseEndpoint
 let webSocket = null
 
 const connectWebSocket = () => {
-
     webSocket = new WebSocket(socketBaseEndpoint + '/ws')
 
     webSocket.onopen = (event) => {

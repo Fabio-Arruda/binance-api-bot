@@ -1,40 +1,38 @@
-const moment = require('moment');
-const request = require('../model/request');
+const moment = require('moment')
+const request = require('../model/request')
 
 let socket = null
 let openTrade = null
 
 const doScalpTrade = async (strategy, lastClosedCandle) => {
-
     let hasOpenTrade = openTrade !== null
 
     if (!hasOpenTrade) {
         console.log('\n--------------------------------------------------------\n')
-        console.log(`---> Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}`);
+        console.log(`---> Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}`)
 
         let result = null
         try {
-            result = await request.openNewOrder(strategy.pair, 'BUY', 'MARKET', strategy.tradeAmount);
+            result = await request.openNewOrder(strategy.pair, 'BUY', 'MARKET', strategy.tradeAmount)
         } catch (error) {
             console.log('Nao foi possivel posicionar a nova ordem') 
         }
         
         if (result != null && result.fills) {
-
-            let buyPrice = calculateBuyPrice(result.fills);
-            let stopPrice = calculateStopPrice(lastClosedCandle, strategy);
-            let targetPrice = calculateTargetPrice(buyPrice, stopPrice, strategy);
+            let buyPrice = calculateBuyPrice(result.fills)
+            let stopPrice = calculateStopPrice(lastClosedCandle, strategy)
+            let targetPrice = calculateTargetPrice(buyPrice, stopPrice, strategy)
             
             let stopResult = {}
             try {
-                stopResult = await request.openNewOrder(strategy.pair, 'SELL', 'STOP_LOSS_LIMIT', strategy.tradeAmount, stopPrice);
+                stopResult = await request.openNewOrder(strategy.pair, 'SELL', 'STOP_LOSS_LIMIT', strategy.tradeAmount, stopPrice)
             } catch (error) {
                 console.log('Nao foi possivel posicionar o STOP') 
             }
             
             let takeProfitResult = {}
             try {
-                takeProfitResult = await request.openNewOrder(strategy.pair, 'SELL', 'TAKE_PROFIT_LIMIT', strategy.tradeAmount, targetPrice);
+                takeProfitResult = await request.openNewOrder(strategy.pair, 'SELL', 'TAKE_PROFIT_LIMIT', strategy.tradeAmount, targetPrice)
             } catch (error) {
                 console.log('Nao foi possivel posicionar o TAKE PROFIT')
             }
@@ -49,14 +47,13 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
                 stopOrderId: stopResult.orderId ? stopResult.orderId : 'NA'
             }
             
-            console.log('Open Trade')
             console.log(openTrade)
             console.log('\n--------------------------------------------------------\n')
 
             if (socket && socket.subscribeKline) {
                 socket.subscribeKline(strategy.pair, strategy.timeInterval)
             } else {
-                socket = require('../model/socket');
+                socket = require('../model/socket')
                 socket.subscribeKline(strategy.pair, strategy.timeInterval)
             }
         } 
@@ -64,7 +61,6 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
 }
 
 const followTrade = async (data) => {
-
     try {
         let currentCandleMaxPrice = data.k.h
         let currentCandleMinPrice = data.k.l
@@ -108,15 +104,15 @@ const followTrade = async (data) => {
 }
 
 const calculateBuyPrice = (orderFills) => {
-    let pricesSum = 0;
+    let pricesSum = 0
     orderFills.forEach( fill => {
-        pricesSum += parseFloat(fill.price);
-    });
-    return parseFloat((pricesSum / orderFills.length).toFixed(1));
+        pricesSum += parseFloat(fill.price)
+    })
+    return parseFloat((pricesSum / orderFills.length).toFixed(1))
 }
 
 const calculateStopPrice = (lastClosedCandle, strategy) => {
-    return parseFloat((lastClosedCandle.lowPrice - strategy.stopMargin).toFixed(1));
+    return parseFloat((lastClosedCandle.lowPrice - strategy.stopMargin).toFixed(1))
 }
 
 const calculateTargetPrice = (buyPrice, stopPrice, strategy) => {
