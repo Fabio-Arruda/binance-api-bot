@@ -1,5 +1,6 @@
 const moment = require('moment')
 const request = require('../model/request')
+const log = require('../lib/log')
 
 let socket = null
 let openTrade = null
@@ -8,8 +9,8 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
     let hasOpenTrade = openTrade !== null
 
     if (!hasOpenTrade) {
-        console.log('\n--------------------------------------------------------\n')
-        console.log(`---> Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}`)
+        log.save('\n--------------------------------------------------------\n')
+        log.save(`---> Sinal de COMPRA em ${strategy.pair} às ${moment().format('HH:mm:ss')}\n\n`)
 
         let result = null
         try {
@@ -47,8 +48,8 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
                 stopOrderId: stopResult.orderId ? stopResult.orderId : 'NA'
             }
             
-            console.log(openTrade)
-            console.log('\n--------------------------------------------------------\n')
+            log.save(openTrade)
+            log.save('\n--------------------------------------------------------\n')
 
             if (socket && socket.subscribeKline) {
                 socket.subscribeKline(strategy.pair, strategy.timeInterval)
@@ -71,11 +72,11 @@ const followTrade = async (data) => {
 
             // se sim, cancela a ordem stop
             if (checkOrderResponse.status === 'FILLED') {
-                console.log('O TAKE PROFIT foi executado')
+                log.save('O TAKE PROFIT foi executado\n')
                 let cancelOrderResponse = await request.cancelOrder(openTrade.symbol, openTrade.stopOrderId)
                 
                 if (cancelOrderResponse.status === 'CANCELED') {
-                    console.log('Ordem STOP cancelada')
+                    log.save('Ordem STOP cancelada\n')
                     socket.unsubscribeKline(openTrade.symbol, openTrade.timeInterval)
                     openTrade = null
                 }
@@ -88,11 +89,11 @@ const followTrade = async (data) => {
             
             // se sim, cancela a ordem alvo
             if (checkOrderResponse.status === 'FILLED') {
-                console.log('O STOP foi executado')
+                log.save('O STOP foi executado\n')
                 let cancelOrderResponse = await request.cancelOrder(openTrade.symbol, openTrade.targetOrderId)
                 
                 if (cancelOrderResponse.status === 'CANCELED') {
-                    console.log('Ordem TAKE PROFIT cancelada')
+                    log.save('Ordem TAKE PROFIT cancelada\n')
                     socket.unsubscribeKline(openTrade.symbol, openTrade.timeInterval)
                     openTrade = null
                 }
