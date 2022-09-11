@@ -23,7 +23,7 @@ const doScalpTrade = async (strategy, lastClosedCandle) => {
 
             let buyPrice = calculateBuyPrice(result.fills);
             let stopPrice = calculateStopPrice(lastClosedCandle, strategy);
-            let targetPrice = calculateTargetPrice(buyPrice, stopPrice);
+            let targetPrice = calculateTargetPrice(buyPrice, stopPrice, strategy);
             
             let stopResult = {}
             try {
@@ -119,8 +119,8 @@ const calculateStopPrice = (lastClosedCandle, strategy) => {
     return parseFloat((lastClosedCandle.lowPrice - strategy.stopMargin).toFixed(1));
 }
 
-const calculateTargetPrice = (buyPrice, stopPrice) => {
-    return parseFloat((buyPrice + (buyPrice - stopPrice)).toFixed(1))
+const calculateTargetPrice = (buyPrice, stopPrice, strategy) => {
+    return parseFloat((buyPrice + (buyPrice - stopPrice) * strategy.takeProfitMultiplier).toFixed(1))
 }
 
 module.exports = {

@@ -29,6 +29,7 @@ const config = {
         periods: 9,
         timeInterval: '5m',
         stopMargin: 0.1,
+        takeProfitMultiplier: 3,
         tradeAmount: 1,
         useTrendConfirmation: true,
         trendConfirmationPeriods: 50,
